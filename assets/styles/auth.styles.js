@@ -1,0 +1,115 @@
+import { StyleSheet } from "react-native";
+import { COLORS } from "../../constants/colors";
+
+export const styles = StyleSheet.create({
+    container: {
+        width: '100%',
+        backgroundColor: COLORS.background,
+        alignItems: 'center',
+    },
+    illustration: {
+        width: 310,
+        height: 310,
+        resizeMode: "contain",
+        marginHorizontal: 20,
+    },
+    title: {
+        fontSize: 32,
+        fontWeight: "bold",
+        color: COLORS.text,
+        marginVertical: 15,
+        marginHorizontal: 20,
+        textAlign: "center",
+    },
+    input: {
+        backgroundColor: COLORS.white,
+        borderRadius: 12,
+        padding: 15,
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        fontSize: 16,
+        color: COLORS.text,
+    },
+    errorInput: {
+        borderColor: COLORS.expense,
+    },
+    button: {
+        backgroundColor: COLORS.primary,
+        borderRadius: 16,
+        paddingVertical: 20,
+        paddingHorizontal: 40,
+        alignItems: "center",
+        marginTop: 15,
+        marginBottom: 25,
+        width: "100%",
+    },
+    buttonText: {
+        color: COLORS.white,
+        fontSize: 20,
+        fontWeight: "700",
+    },
+    footerContainer: {
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: 8,
+        marginHorizontal: 20,
+    },
+    footerText: {
+        color: COLORS.text,
+        fontSize: 16,
+    },
+    linkText: {
+        color: COLORS.primary,
+        fontSize: 16,
+        fontWeight: "600",
+    },
+    verificationContainer: {
+        flex: 1,
+        backgroundColor: COLORS.background,
+        paddingVertical: 20,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    verificationTitle: {
+        fontSize: 24,
+        fontWeight: "bold",
+        color: COLORS.text,
+        marginBottom: 20,
+        textAlign: "center",
+    },
+    verificationInput: {
+        backgroundColor: COLORS.white,
+        borderRadius: 16,
+        padding: 20,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        fontSize: 18,
+        color: COLORS.text,
+        width: "100%",
+        textAlign: "center",
+        letterSpacing: 2,
+        height: 65,
+    },
+
+    // 🔴 Error styles
+    errorBox: {
+        backgroundColor: "#FFE5E5",
+        padding: 16,
+        borderRadius: 12,
+        borderLeftWidth: 4,
+        borderLeftColor: COLORS.expense,
+        marginBottom: 20,
+        flexDirection: "row",
+        alignItems: "center",
+        width: "100%",
+    },
+    errorText: {
+        color: COLORS.text,
+        marginLeft: 10,
+        flex: 1,
+        fontSize: 16,
+    },
+});
