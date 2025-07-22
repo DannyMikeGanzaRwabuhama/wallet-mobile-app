@@ -31,9 +31,9 @@ yarn-error.*
 *.pem
 
 # local env files
-.env
 
 # typescript
 *.tsbuildinfo
 
 app-example
+config.bat
