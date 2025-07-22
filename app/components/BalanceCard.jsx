@@ -2,7 +2,7 @@ import { View, Text } from "react-native";
 import { styles } from "../../assets/styles/home.styles";
 import { COLORS } from "../../constants/colors";
 
-export const BalanceCard = ({ summary }) => {
+const BalanceCard = ({ summary }) => {
   return (
     <View style={styles.balanceCard}>
       <Text style={styles.balanceTitle}>Total Balance</Text>
@@ -18,10 +18,12 @@ export const BalanceCard = ({ summary }) => {
         <View style={styles.balanceStatItem}>
           <Text style={styles.balanceStatLabel}>Expenses</Text>
           <Text style={[styles.balanceStatAmount, { color: COLORS.expense }]}>
-            -${Math.abs(parseFloat(summary.expenses)).toFixed(2)}
+            -${Math.abs(parseFloat(summary.expense)).toFixed(2)}
           </Text>
         </View>
       </View>
     </View>
   );
 };
+
+export default BalanceCard;

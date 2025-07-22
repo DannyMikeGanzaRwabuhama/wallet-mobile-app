@@ -1,19 +1,21 @@
 import { useCallback, useState } from "react";
 import { Alert } from "react-native";
-import { API_URL } from "../constants/categories";
 
 export const useTransactions = (userId) => {
 
+    const API_URL = process.env.EXPO_PUBLIC_API_URL;
     const [transactions, setTransactions] = useState([]);
     const [summary, setSummary] = useState({
         balance: 0,
         income: 0,
         expense: 0,
     });
+    // This 'loading' state now primarily reflects the loading of transactions and summary data.
     const [loading, setLoading] = useState(true);
 
     const fetchTransactions = useCallback(
         async () => {
+            setLoading(true); // Start loading for data fetch
             try {
                 const response = await fetch(`${API_URL}/transactions/${userId}`);
                 const data = await response.json();
@@ -21,14 +23,15 @@ export const useTransactions = (userId) => {
             } catch (e) {
                 console.error("Error fetching transactions: ", e);
             } finally {
-                setLoading(false);
+                setLoading(false); // End loading for data fetch
             }
         },
-        [userId],
+        [userId, API_URL],
     );
 
     const fetchSummary = useCallback(
         async () => {
+            setLoading(true); // Start loading for data fetch
             try {
                 const response = await fetch(`${API_URL}/transactions/summary/${userId}`);
                 const data = await response.json();
@@ -36,23 +39,24 @@ export const useTransactions = (userId) => {
             } catch (e) {
                 console.error("Error fetching summary: ", e);
             } finally {
-                setLoading(false);
+                setLoading(false); // End loading for data fetch
             }
         },
-        [userId],
+        [userId, API_URL],
     );
 
     const loadData = useCallback(
         async () => {
+            setLoading(true); // Start loading for overall data load
             try {
                 await Promise.all([fetchTransactions(), fetchSummary()]);
             } catch (e) {
                 console.error("Error loading data: ", e);
             } finally {
-                setLoading(false);
+                setLoading(false); // End loading for overall data load
             }
         },
-        [fetchTransactions, fetchSummary, userId],
+        [fetchTransactions, fetchSummary],
     );
 
     const createTransaction = async ({ title, amount, category }) => {
@@ -72,16 +76,17 @@ export const useTransactions = (userId) => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                console.log(errorData);
-                throw new Error(errorData.error || 'Failed to create transaction');
+                console.error("API Error creating transaction: ", errorData); // Use console.error for clarity
+                Alert.alert("Error", errorData.error || 'Failed to create transaction'); // Show specific error if available
+                return false; // Indicate failure
             }
 
             Alert.alert("Success", "Transaction created successfully");
+            return true; // Indicate success
         } catch (error) {
-            console.error("Error creating transaction: ", error);
-            Alert.alert("Error", "Failed to create transaction");
-        } finally {
-            setLoading(false);
+            console.error("Network or unexpected error creating transaction: ", error); // Differentiate error types
+            Alert.alert("Error", "Failed to create transaction due to a network issue or unexpected error.");
+            return false; // Indicate failure
         }
     }
 
@@ -91,23 +96,26 @@ export const useTransactions = (userId) => {
                 method: 'DELETE',
             });
             if (!response.ok) {
-                throw new Error('Failed to delete transaction');
+                // If response is not ok, it's an API error, no need to throw
+                console.error("API Error deleting transaction: ", response.status, response.statusText);
+                Alert.alert("Error", 'Failed to delete transaction');
+                return false; // Indicate failure
             }
 
-            await loadData();
+            await loadData(); // Reload data after deletion
             Alert.alert("Success", "Transaction deleted successfully");
+            return true; // Indicate success
         } catch (e) {
-            console.error("Error deleting data: ", e);
-            Alert.alert("Error", "Failed to delete transaction");
-        } finally {
-            setLoading(false);
+            console.error("Network or unexpected error deleting transaction: ", e);
+            Alert.alert("Error", "Failed to delete transaction due to a network issue or unexpected error.");
+            return false; // Indicate failure
         }
     }
 
     return {
         transactions,
         summary,
-        loading,
+        loading, // This 'loading' is for overall data fetch
         loadData,
         createTransaction,
         deleteTransaction,

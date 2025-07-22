@@ -2,39 +2,48 @@ import { useUser } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from "react";
-import { Image, RefreshControl, TouchableOpacity, View, FlatList } from 'react-native';
+import { Image, RefreshControl, TouchableOpacity, View, FlatList, Alert, Text } from 'react-native';
 import { styles } from '../../assets/styles/home.styles.js';
 import { useTransactions } from "../../hooks/useTransactions.js";
-import { BalanceCard } from '../components/BalanceCard.jsx';
+import BalanceCard from '../components/BalanceCard.jsx';
 import PageLoader from "../components/PageLoader.jsx";
 import SignOutButton from '../components/SignOutButton.jsx';
-import { TransactionItem } from '../components/TransactionItem.jsx';
+import TransactionItem from '../components/TransactionItem.jsx';
+import NoTransactionsFound from "../components/NoTransactionsFound.jsx";
 
 export default function Page() {
     const { user } = useUser();
     const router = useRouter();
     const [refreshing, setRefreshing] = useState(false);
 
-    const { transactions, loadData, deleteTransaction, loading, summary } = useTransactions(user.id);
+    // Add null check for user
+    const userId = user?.id;
+    const { transactions, loadData, deleteTransaction, loading, summary } = useTransactions(userId);
 
     useEffect(() => {
-        loadData();
-    }, [loadData]);
+        if (userId) {
+            loadData();
+        }
+    }, [loadData, userId]);
 
     const onRefresh = async () => {
         setRefreshing(true);
         await loadData();
         setRefreshing(false);
-    }
+    };
 
     const handleDelete = (id) => {
         Alert.alert("Delete Transaction", "Are you sure you want to delete this transaction?", [
             { text: "Cancel", style: "cancel" },
-            { text: "Logout", style: "destructive", onPress: deleteTransaction(id) }
-        ])
-    }
+            {
+                text: "Delete", // Changed "Logout" to "Delete" for clarity
+                style: "destructive",
+                onPress: () => deleteTransaction(id) // Wrap in arrow function
+            }
+        ]);
+    };
 
-    if (loading && !refreshing) return <PageLoader />
+    if (loading && !refreshing) return <PageLoader />;
 
     return (
         <View style={styles.container}>
@@ -52,7 +61,7 @@ export default function Page() {
                         <View style={styles.welcomeContainer}>
                             <Text style={styles.welcomeText}>Welcome,</Text>
                             <Text style={styles.usernameText}>
-                                {user?.emailAddresses[0].emailAddress.split["@"][0]}
+                                {user?.emailAddresses?.[0]?.emailAddress?.split("@")[0] || 'User'}
                             </Text>
                         </View>
                     </View>
@@ -77,7 +86,7 @@ export default function Page() {
                 style={styles.transactionsList}
                 contentContainerStyle={styles.transactionsListContent}
                 data={transactions}
-                renderItem={(item) => (
+                renderItem={({ item }) => (
                     <TransactionItem item={item} onDelete={handleDelete} />
                 )}
                 ListEmptyComponent={<NoTransactionsFound />}
@@ -85,5 +94,5 @@ export default function Page() {
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
             />
         </View>
-    )
+    );
 }

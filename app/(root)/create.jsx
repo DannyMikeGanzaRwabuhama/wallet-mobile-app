@@ -1,43 +1,64 @@
-import { View, Text, TouchableOpacity } from 'react-native'
+import {View, Text, TouchableOpacity, Alert, TextInput, ActivityIndicator} from 'react-native'
 import { useRouter } from 'expo-router'
 import { useUser } from '@clerk/clerk-expo';
 import { styles } from '../../assets/styles/create.styles';
 import { useTransactions } from '../../hooks/useTransactions';
 import { COLORS } from '../../constants/colors';
 import { CATEGORIES } from '../../constants/categories';
-import { ActivityIndicator } from 'react-native-web';
+import {useState} from "react";
+import {Ionicons} from "@expo/vector-icons";
 
 const CreateScreen = () => {
     const router = useRouter();
     const { user } = useUser();
-    const { createTransaction, loading } = useTransactions(user.id);
+    // Destructure only createTransaction from useTransactions, as its loading state is now managed locally
+    const { createTransaction } = useTransactions(user.id);
 
     const [title, setTitle] = useState("");
     const [amount, setAmount] = useState("");
     const [selectedCategory, setSelectedCategory] = useState(null);
-    const [isExpense, setIsExpense] = useState(false);
+    const [isExpense, setIsExpense] = useState(true);
+    // New local loading state for the create operation
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleCreate = async () => {
-        if (!title.trim()) return Alert.alert("Error", "Please enter a transaction title");
+        if (!title.trim()) {
+            Alert.alert("Error", "Please enter a transaction title");
+            return;
+        }
         if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
             Alert.alert("Error", "Please enter a valid amount");
             return;
         }
 
-        if (!selectedCategory) return Alert.alert("Error", "Please select a category");
+        if (!selectedCategory) {
+            Alert.alert("Error", "Please select a category");
+            return;
+        }
 
-        // Format the amount 
-        const formattedAmount = isExpense
-            ? -Math.abs(parseFloat(amount))
-            : Math.abs(parseFloat(amount));
+        setIsLoading(true); // Start local loading
 
-        await createTransaction({
-            title: title.trim(),
-            amount: formattedAmount,
-            category: selectedCategory,
-        })
+        try {
+            // Format the amount
+            const formattedAmount = isExpense
+                ? -Math.abs(parseFloat(amount))
+                : Math.abs(parseFloat(amount));
 
-        router.push("/");
+            const success = await createTransaction({
+                title: title.trim(),
+                amount: formattedAmount,
+                category: selectedCategory,
+            });
+
+            if (success) {
+                router.push("/"); // Navigate only on successful creation
+            }
+        } catch (error) {
+            console.error("Error during transaction creation process: ", error);
+            // Alert is already handled by useTransactions, so no need for another here
+        } finally {
+            setIsLoading(false); // End local loading
+        }
     }
     return (
         <View style={styles.container}>
@@ -49,11 +70,12 @@ const CreateScreen = () => {
                 <Text style={styles.headerTitle}>New Transaction</Text>
                 <TouchableOpacity
                     onPress={handleCreate}
-                    style={[styles.saveButtonContainer, loading && styles.saveButtonDisabled]}
-                    disabled={loading}
+                    // Use the new local isLoading state
+                    style={[styles.saveButtonContainer, isLoading && styles.saveButtonDisabled]}
+                    disabled={isLoading} // Disable button while loading
                 >
-                    <Text style={styles.saveButton}>{loading ? "Saving..." : "Save"}</Text>
-                    {!loading && <Ionicons name="checkmark" size={20} color={COLORS.primary} />}
+                    <Text style={styles.saveButton}>{isLoading ? "Saving..." : "Save"}</Text>
+                    {!isLoading && <Ionicons name="checkmark" size={20} color={COLORS.primary} />}
                 </TouchableOpacity>
             </View>
 
@@ -102,6 +124,7 @@ const CreateScreen = () => {
                         value={amount}
                         onChangeText={setAmount}
                         keyboardType="numeric"
+                        editable={!isLoading} // Disable input while loading
                     />
                 </View>
 
@@ -119,6 +142,7 @@ const CreateScreen = () => {
                         placeholderTextColor={COLORS.textLight}
                         value={title}
                         onChangeText={setTitle}
+                        editable={!isLoading} // Disable input while loading
                     />
                 </View>
 
@@ -136,6 +160,7 @@ const CreateScreen = () => {
                                 selectedCategory === category.name && styles.categoryButtonActive,
                             ]}
                             onPress={() => setSelectedCategory(category.name)}
+                            disabled={isLoading} // Disable category buttons while loading
                         >
                             <Ionicons
                                 name={category.icon}
@@ -156,7 +181,8 @@ const CreateScreen = () => {
                 </View>
             </View>
 
-            {loading && (
+            {/* Use the new local isLoading state for the ActivityIndicator */}
+            {isLoading && (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size={'large'} color={COLORS.primary} />
                 </View>

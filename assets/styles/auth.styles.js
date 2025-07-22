@@ -42,7 +42,7 @@ export const styles = StyleSheet.create({
         alignItems: "center",
         marginTop: 15,
         marginBottom: 25,
-        width: "100%",
+        width: 350,
     },
     buttonText: {
         color: COLORS.white,
@@ -89,6 +89,8 @@ export const styles = StyleSheet.create({
         fontSize: 18,
         color: COLORS.text,
         width: "100%",
+        maxWidth: 350,
+        minWidth: 200,
         textAlign: "center",
         letterSpacing: 2,
         height: 65,
